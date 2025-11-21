@@ -1,251 +1,154 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸运大转盘抽奖</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>幸运大转盘</title>
 
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(180deg, #8f4aff, #4fc3f7);
+        font-family: "Microsoft YaHei";
+        text-align: center;
+        color: #fff;
+    }
 
-        .container { max-width: 800px; width: 100%; text-align: center; }
-        header { margin-bottom: 30px; }
+    .title {
+        margin-top: 40px;
+        font-size: 38px;
+        font-weight: bold;
+    }
+    .desc {
+        margin-top: 10px;
+        font-size: 20px;
+    }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
+    .wheel-box {
+        margin: 30px auto;
+        width: 300px;
+        height: 300px;
+        position: relative;
+    }
+    #wheel {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 8px solid #fff;
+        transition: transform 4s cubic-bezier(.25,.1,.25,1);
+    }
 
-        .subtitle { font-size: 1.2rem; opacity: 0.9; }
+    /* 指针 */
+    .pointer {
+        width: 0;
+        height: 0;
+        border-left: 18px solid transparent;
+        border-right: 18px solid transparent;
+        border-bottom: 50px solid #ff9800;
+        position: absolute;
+        top: -35px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-        .wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto 40px;
-        }
+    .btn {
+        margin-top: 25px;
+        width: 200px;
+        height: 55px;
+        border-radius: 28px;
+        border: none;
+        font-size: 20px;
+        color: #fff;
+        cursor: pointer;
+        background: linear-gradient(45deg, #ffca28, #ff4081);
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+    }
 
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 50px;
-            background-color: #ff5722;
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-            z-index: 10;
-        }
-
-        .spin-btn {
-            background: linear-gradient(to right, #ff8a00, #e52e71);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
-        }
-
-        .spin-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .spin-btn:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .result {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .prize-text {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #ffeb3b;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-    </style>
+    .result-box {
+        margin: 30px auto;
+        width: 85%;
+        height: 120px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.25);
+        backdrop-filter: blur(8px);
+        padding-top: 25px;
+    }
+    .result-title {
+        font-size: 22px;
+    }
+    #result {
+        margin-top: 10px;
+        font-size: 32px;
+        font-weight: bold;
+    }
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>幸运大转盘</h1>
-            <p class="subtitle">试试你的手气，赢取丰厚奖励！</p>
-        </header>
 
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <canvas id="wheel" width="300" height="300"></canvas>
-        </div>
+<div class="title">幸运大转盘</div>
+<div class="desc">试试你的手气，赢取丰厚奖励！</div>
 
-        <button class="spin-btn" id="spin-btn">开始抽奖</button>
+<div class="wheel-box">
+    <div class="pointer"></div>
+    <img id="wheel" src="wheel.png" alt="转盘">
+</div>
 
-        <div class="result">
-            <h3>抽奖结果</h3>
-            <div id="result-text" class="prize-text">等待抽奖...</div>
-        </div>
-    </div>
+<button class="btn" id="startBtn">开始抽奖</button>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.getElementById('wheel');
-            const ctx = canvas.getContext('2d');
-            const spinBtn = document.getElementById('spin-btn');
-            const resultText = document.getElementById('result-text');
+<div class="result-box">
+    <div class="result-title">抽奖结果</div>
+    <div id="result">---</div>
+</div>
 
-            const prizes = ['红包1', '红包2', '红包3', '红包4', '红包5', '谢谢参与'];
-            const probabilities = [1, 1, 1, 1, 1, 95];
+<script>
+/* ===============================
+   奖项配置（必须按图片顺时针顺序）
+   =============================== */
+const prizes = [
+    "红包1",
+    "红包2",
+    "红包3",
+    "谢谢参与",
+    "实物奖励",
+    "红包4"
+];
 
-            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+// 每个区域角度
+const perAngle = 360 / prizes.length;
 
-            let isSpinning = false;
-            let currentRotation = 0;
+// 当前累计旋转角度
+let rotation = 0;
 
-            /** 绘制转盘（修复：将 0° 对齐到顶部） */
-            function drawWheel() {
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const radius = canvas.width / 2;
+const wheel = document.getElementById("wheel");
+const resultBox = document.getElementById("result");
+const btn = document.getElementById("startBtn");
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+// 点击抽奖
+btn.onclick = function () {
 
-                ctx.save();
-                // ★ 让默认 0°（右侧）旋转到顶部，与指针一致
-                ctx.translate(centerX, centerY);
-                ctx.rotate(-Math.PI / 2);
-                ctx.translate(-centerX, -centerY);
+    btn.disabled = true;
+    resultBox.innerHTML = "抽奖中...";
 
-                let startAngle = 0;
-                const arcSize = (2 * Math.PI) / prizes.length;
+    // 随机选中奖项索引
+    const index = Math.floor(Math.random() * prizes.length);
 
-                prizes.forEach((prize, index) => {
-                    const endAngle = startAngle + arcSize;
+    // 🎯 计算转盘最终角度（确保指针指在对应扇区）
+    const targetAngle = index * perAngle;
 
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                    ctx.closePath();
-                    ctx.fillStyle = colors[index];
-                    ctx.fill();
+    // 🎯 + 多转几圈（确保动画稳定）
+    rotation = rotation + 360 * 5 + (360 - targetAngle);
 
-                    ctx.save();
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(startAngle + arcSize / 2);
-                    ctx.textAlign = 'right';
-                    ctx.fillStyle = '#fff';
-                    ctx.font = 'bold 14px Arial';
-                    ctx.fillText(prize, radius - 20, 5);
-                    ctx.restore();
+    wheel.style.transform = `rotate(${rotation}deg)`;
 
-                    startAngle = endAngle;
-                });
+    // 动画结束后给结果
+    setTimeout(() => {
+        resultBox.innerHTML = prizes[index];
+        btn.disabled = false;
+    }, 4200);
+};
+</script>
 
-                ctx.restore();
-
-                // 中心
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI);
-                ctx.fillStyle = '#fff';
-                ctx.fill();
-            }
-
-            /** 按概率返回奖品 index */
-            function getRandomPrize() {
-                let random = Math.random() * 100;
-                let cumulative = 0;
-
-                for (let i = 0; i < probabilities.length; i++) {
-                    cumulative += probabilities[i];
-                    if (random <= cumulative) return i;
-                }
-                return probabilities.length - 1;
-            }
-
-            /** 旋转转盘 */
-            function spinWheel() {
-                if (isSpinning) return;
-
-                isSpinning = true;
-                spinBtn.disabled = true;
-                resultText.textContent = '抽奖中...';
-
-                const prizeIndex = getRandomPrize();
-                const arcSize = (2 * Math.PI) / prizes.length;
-
-                // ★ 修复后的目标角度（0° 已在顶部）
-                const targetAngle = prizeIndex * arcSize + arcSize / 2;
-
-                const extraRotations = 6 * Math.PI; // 多转几圈
-                const finalRotation = currentRotation + extraRotations + targetAngle;
-
-                const duration = 4500;
-                const startTime = performance.now();
-
-                function animate(time) {
-                    const progress = Math.min((time - startTime) / duration, 1);
-                    const ease = 1 - Math.pow(1 - progress, 3);
-
-                    currentRotation = ease * finalRotation;
-
-                    canvas.style.transform = `rotate(${currentRotation}rad)`;
-
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        setTimeout(() => {
-                            spinBtn.disabled = false;
-                            isSpinning = false;
-                            const prize = prizes[prizeIndex];
-                            resultText.textContent = prize;
-
-                            if (prize !== '谢谢参与') {
-                                alert(`恭喜获得：${prize}`);
-                            }
-                        }, 300);
-                    }
-                }
-
-                requestAnimationFrame(animate);
-            }
-
-            drawWheel();
-            spinBtn.addEventListener('click', spinWheel);
-        });
-    </script>
 </body>
 </html>
