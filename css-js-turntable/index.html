@@ -57,7 +57,6 @@
         background: #fff;
         animation: white-to-yellow 1s linear infinite;
       }
-
       .turntable-wrap .light span:nth-of-type(odd):before {
         background: #d7a945;
         animation: white-to-yellow 1s linear reverse infinite;
@@ -90,6 +89,7 @@
         transform-origin: center center;
       }
 
+      /* gift 容器整体旋转 45° */
       .turntable-wrap .turntable .gift {
         position: relative;
         width: 100%;
@@ -97,6 +97,7 @@
         transform: rotate(45deg);
       }
 
+      /* 每个 item 反向旋转回来 */
       .turntable-wrap .turntable .gift li {
         position: absolute;
         top: 5%; left: 5%;
@@ -182,10 +183,10 @@
         init () {
           if (!this.lottery.length) {
             this.pointer.style.display = 'none';
-            throw new Error('请设置中奖结果数据');
+            throw new Error('请设置中奖数据');
           }
 
-          // 灯
+          // 灯光
           let lightFragment = document.createDocumentFragment();
           for (let i = 0; i < this.lightNum; i++) {
             let span = document.createElement('span');
@@ -194,7 +195,7 @@
           }
           this.light.appendChild(lightFragment);
 
-          // 背景线 + 奖项
+          // 背景 & 奖项
           let bgFragment = document.createDocumentFragment();
           let giftFragment = document.createDocumentFragment();
 
@@ -219,7 +220,6 @@
           this.bg.appendChild(bgFragment);
           this.gift.appendChild(giftFragment);
 
-          // 点击抽奖
           this.pointer.onclick = this.gameStart.bind(this);
         },
 
@@ -239,8 +239,11 @@
 
           let res = this.lottery.filter(it => randomRate >= it.min && randomRate < it.max)[0];
 
-          // 计算旋转角度
-          let rotateItemDeg = (res.location - 1) * (360 / this.lottery.length);
+          // ====== 🔥 修复核心点：补偿 gift 容器旋转 45° ======
+          let offset = 45;
+
+          let rotateItemDeg = (res.location - 1) * (360 / this.lottery.length) - offset;
+
           let rotate = rotateItemDeg + 5 * 360;
           let rotateSpeed = (rotateItemDeg / 360 + 5).toFixed(2);
 
