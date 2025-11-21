@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸运大转盘抽奖</title>
+    <title>林水芬专属幸运大抽奖</title>
     <style>
         * {
             margin: 0;
@@ -179,12 +179,11 @@
 <body>
     <div class="container">
         <header>
-            <h1>幸运大转盘</h1>
-            <p class="subtitle">试试你的手气，赢取丰厚奖励！</p>
+            <h1>林水芬幸运大转盘</h1>
+            <p class="subtitle">开心每一天，赢取丰厚奖励！</p>
         </header>
         
         <div class="wheel-container">
-            <div class="pointer"></div>
             <canvas id="wheel" width="300" height="300"></canvas>
         </div>
         
@@ -203,7 +202,7 @@
             const spinBtn = document.getElementById('spin-btn');
             const resultText = document.getElementById('result-text');
             
-            const prizes = ['红包1', '红包2', '红包3', '红包4', '红包5', '谢谢参与'];
+            const prizes = ['小小红包', '小红包', '红包还可以', '大红包', '大大红包', '谢谢参与'];
             const probabilities = [1, 1, 1, 1, 1, 95]; // 概率百分比
             
             // 颜色数组
