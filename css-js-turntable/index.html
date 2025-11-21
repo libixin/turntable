@@ -1,283 +1,146 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8"/>
-    <title>修复后的转盘</title>
-    <style>
-      * { margin: 0; padding: 0; }
-      ul { list-style: none; }
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>林水芬好运专属抽奖</title>
 
-      @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
-      }
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f6f6f6;
+      margin: 0;
+    }
 
-      @keyframes white-to-yellow {
-        0%   { background: #fff; }
-        100% { background: #d7a945; }
-      }
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+    }
 
-      .turntable-wrap {
-        position: relative;
-        overflow: hidden;
-        margin: 50px;
-        width: 340px;
-        height: 340px;
-        border: 7px solid #b2a98d;
-        border-radius: 50%;
-        box-shadow: 0 0 20px #b2a98d;
-      }
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 5px solid #ff9f1a;
+      box-shadow: 0 0 10px #999;
+      background: conic-gradient(
+        #ffe1e1 0deg 60deg,
+        #fff5cc 60deg 120deg,
+        #e1ffe1 120deg 180deg,
+        #e1f0ff 180deg 240deg,
+        #f3e1ff 240deg 300deg,
+        #eee 300deg 360deg
+      );
+      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+    }
 
-      .turntable-wrap .light {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: #e0ddd1;
-        animation: rotate 5s linear infinite;
-      }
+    .wheel-text {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      font-size: 14px;
+      font-weight: bold;
+    }
 
-      .turntable-wrap .light span {
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        margin: 0 auto;
-        width: 10px; height: 100%;
-        transform-origin: center center;
-      }
+    .wheel-text div {
+      position: absolute;
+      width: 50%;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0% 0%;
+    }
 
-      .turntable-wrap .light span:before {
-        content: '';
-        position: absolute;
-        top: 5px; left: 0; right: 0;
-        margin: 0 auto;
-        width: 10px; height: 10px;
-        border-radius: 50%;
-      }
+    .pointer {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 25px solid red;
+    }
 
-      .turntable-wrap .light span:nth-of-type(even):before {
-        background: #fff;
-        animation: white-to-yellow 1s linear infinite;
-      }
-      .turntable-wrap .light span:nth-of-type(odd):before {
-        background: #d7a945;
-        animation: white-to-yellow 1s linear reverse infinite;
-      }
+    .btn {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 25px;
+      font-size: 18px;
+      background: #ff5722;
+      color: #fff;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
-      .turntable-wrap .turntable {
-        position: absolute;
-        margin: 20px;
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        background: #fff;
-      }
+<div class="wheel-container">
+  <div class="pointer"></div>
+  <div class="wheel" id="wheel"></div>
 
-      .turntable-wrap .turntable .bg {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: #fff;
-        border: 1px solid #dfd8be;
-        border-radius: 50%;
-        transform: rotate(90deg);
-      }
+  <div class="wheel-text">
+    <div style="transform: rotate(30deg) translate(0, -120px)">红包1</div>
+    <div style="transform: rotate(90deg) translate(0, -120px)">红包2</div>
+    <div style="transform: rotate(150deg) translate(0, -120px)">红包3</div>
+    <div style="transform: rotate(210deg) translate(0, -120px)">红包4</div>
+    <div style="transform: rotate(270deg) translate(0, -120px)">红包5</div>
+    <div style="transform: rotate(330deg) translate(0, -120px)">谢谢参与</div>
+  </div>
 
-      .turntable-wrap .turntable .bg li {
-        position: absolute;
-        width: 1px; height: 100%;
-        background: #dfd8be;
-        left: 0; right: 0; margin: 0 auto;
-        transform-origin: center center;
-      }
+  <button class="btn" id="btn">开始抽奖</button>
+</div>
 
-      /* gift 容器整体旋转 45° */
-      .turntable-wrap .turntable .gift {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        transform: rotate(45deg);
-      }
+<script>
+  const prizes = ["红包1", "红包2", "红包3", "红包4", "红包5", "谢谢参与"];
 
-      /* 每个 item 反向旋转回来 */
-      .turntable-wrap .turntable .gift li {
-        position: absolute;
-        top: 5%; left: 5%;
-        width: 45%; height: 45%;
-        transform-origin: right bottom;
-      }
+  // 对应概率：1%,1%,1%,1%,1%,95%
+  const weights = [1, 1, 1, 1, 1, 95];
 
-      .turntable-wrap .turntable .gift li span {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        display: block;
-        width: 50px; height: 70px;
-        margin: auto;
-        transform: rotate(-45deg);
-        line-height: 80px;
-        background: #f23c3c;
-        color: #fff;
-        font-size: 24px;
-        border-radius: 5px;
-        text-align: center;
-      }
+  function getPrizeIndex() {
+    const sum = weights.reduce((a, b) => a + b, 0);
+    const rand = Math.random() * sum;
+    let acc = 0;
+    for (let i = 0; i < weights.length; i++) {
+      acc += weights[i];
+      if (rand < acc) return i;
+    }
+    return weights.length - 1;
+  }
 
-      .turntable-wrap .turntable .gift li.no-gift span {
-        background: #fff;
-        color: #bfa74f;
-        font-size: 12px;
-        line-height: 70px;
-      }
+  const wheel = document.getElementById("wheel");
+  const btn = document.getElementById("btn");
 
-      .turntable-wrap .pointer {
-        position: absolute;
-        top: 50%; left: 0; right: 0;
-        margin: -23px auto;
-        width: 46px; height: 46px;
-        border-radius: 50%;
-        background: #fff;
-        border: 5px solid #fff;
-        box-shadow: 0 0 0 5px #b9a046;
-        text-align: center;
-        line-height: 16px;
-        color: #b9a046;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-      }
+  let rotating = false;
 
-      .pointer:before {
-        content: '';
-        position: absolute;
-        top: -58px; left: 0; right: 0;
-        margin: 0 auto;
-        border-style: solid;
-        border-color: transparent transparent #b9a046 transparent;
-        border-width: 25px 10px 25px 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="turntable-wrap">
-      <div class="light" id="turntable_light"></div>
-      <div class="turntable" id="turntable">
-        <ul class="bg" id="turntable_bg"></ul>
-        <ul class="gift" id="turntable_gift"></ul>
-      </div>
-      <div class="pointer" id="turntable_pointer">点击抽奖</div>
-    </div>
+  btn.onclick = function () {
+    if (rotating) return;
+    rotating = true;
 
-    <script>
-      let turntable = {
-        itemNum: 6,
-        lightNum: 18,
-        light: null,
-        turntable: null,
-        bg: null,
-        gift: null,
-        pointer: null,
-        lottery: [],
+    const index = getPrizeIndex();
+    const baseDeg = 360 * 6;  // 多转几圈更美观
 
-        typeMap:  {1: '¥', 2: '谢谢参与'},
-        typeClassMap: {1: '', 2: 'no-gift'},
-        isGoing: false,
+    // 每个奖品 360/6 = 60 度
+    const targetDeg = baseDeg - index * 60 - 30; // -30 让指针指向扇区中间
 
-        init () {
-          if (!this.lottery.length) {
-            this.pointer.style.display = 'none';
-            throw new Error('请设置中奖数据');
-          }
+    wheel.style.transform = `rotate(${targetDeg}deg)`;
 
-          // 灯光
-          let lightFragment = document.createDocumentFragment();
-          for (let i = 0; i < this.lightNum; i++) {
-            let span = document.createElement('span');
-            span.style.transform = `rotate(${(360 / this.lightNum) * i}deg)`;
-            lightFragment.appendChild(span);
-          }
-          this.light.appendChild(lightFragment);
-
-          // 背景 & 奖项
-          let bgFragment = document.createDocumentFragment();
-          let giftFragment = document.createDocumentFragment();
-
-          for (let i = 0; i < this.itemNum; i++) {
-            let deg = (360 / this.itemNum) * i;
-
-            let bgItem = document.createElement('li');
-            bgItem.style.transform = `rotate(${deg}deg)`;
-            bgFragment.appendChild(bgItem);
-
-            let giftItem = document.createElement('li');
-            giftItem.style.transform = `rotate(${deg}deg)`;
-            giftItem.className = this.typeClassMap[this.lottery[i].type];
-
-            let span = document.createElement('span');
-            span.innerHTML = this.typeMap[this.lottery[i].type];
-            giftItem.appendChild(span);
-
-            giftFragment.appendChild(giftItem);
-          }
-
-          this.bg.appendChild(bgFragment);
-          this.gift.appendChild(giftFragment);
-
-          this.pointer.onclick = this.gameStart.bind(this);
-        },
-
-        gameStart () {
-          if (this.isGoing) return;
-          this.isGoing = true;
-
-          // 随机概率
-          let randomRate = ~~(Math.random() * 100);
-          let num = 0;
-
-          this.lottery.forEach(item => {
-            item.min = num;
-            num += item.rate;
-            item.max = num;
-          });
-
-          let res = this.lottery.filter(it => randomRate >= it.min && randomRate < it.max)[0];
-
-          // ====== 🔥 修复核心点：补偿 gift 容器旋转 45° ======
-          let offset = 45;
-
-          let rotateItemDeg = (res.location - 1) * (360 / this.lottery.length) - offset;
-
-          let rotate = rotateItemDeg + 5 * 360;
-          let rotateSpeed = (rotateItemDeg / 360 + 5).toFixed(2);
-
-          this.turntable.removeAttribute('style');
-
-          setTimeout(() => {
-            this.turntable.style.transform = `rotate(${rotate}deg)`;
-            this.turntable.style.transition = `transform ${rotateSpeed}s ease-out`;
-          }, 10);
-
-          setTimeout(() => {
-            this.isGoing = false;
-            alert("中奖结果：" + this.typeMap[res.type]);
-          }, rotateSpeed * 1000);
-        }
-      };
-
-      let lottery = [
-        { location: 1, type: 1, rate: 1 },
-        { location: 2, type: 1, rate: 1 },
-        { location: 3, type: 1, rate: 1 },
-        { location: 4, type: 1, rate: 1 },
-        { location: 5, type: 1, rate: 1 },
-        { location: 6, type: 2, rate: 95 }
-      ];
-
-      turntable.turntable = document.querySelector('#turntable');
-      turntable.light = document.querySelector('#turntable_light');
-      turntable.bg = document.querySelector('#turntable_bg');
-      turntable.gift = document.querySelector('#turntable_gift');
-      turntable.pointer = document.querySelector('#turntable_pointer');
-      turntable.lottery = lottery;
-
-      turntable.init();
-    </script>
-  </body>
+    setTimeout(() => {
+      alert("恭喜你抽到：" + prizes[index]);
+      rotating = false;
+    }, 4000);
+  }
+</script>
+</body>
 </html>
