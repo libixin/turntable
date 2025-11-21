@@ -1,154 +1,332 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>林水芬幸运大转盘</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+<title>林水芬幸运大抽奖</title>
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: linear-gradient(180deg, #8f4aff, #4fc3f7);
-        font-family: "Microsoft YaHei";
-        text-align: center;
-        color: #fff;
-    }
+  :root{
+    --size: min(90vw, 420px);
+    --pointer-size: 28px;
+  }
+  body{
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg,#f7f9fc,#eaf2ff);
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    box-sizing:border-box;
+    -webkit-font-smoothing:antialiased;
+  }
+  .container{
+    width:var(--size);
+    text-align:center;
+  }
+  .wheel-wrap{
+    position:relative;
+    width:100%;
+    padding-top:100%;
+    border-radius:50%;
+    margin:0 auto 18px;
+    overflow:visible;
+  }
+  /* 转盘（实际是一个正方形，用 padding-top 维持比例） */
+  .wheel{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12), inset 0 2px 8px rgba(255,255,255,0.2);
+    transform: rotate(0deg);
+    transition: transform 0s linear;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    will-change: transform;
+  }
 
-    .title {
-        margin-top: 40px;
-        font-size: 38px;
-        font-weight: bold;
-    }
-    .desc {
-        margin-top: 10px;
-        font-size: 20px;
-    }
+  /* 中心按钮（显示抽奖按钮） */
+  .center-btn{
+    position: absolute;
+    width:36%;
+    height:36%;
+    border-radius:50%;
+    background:linear-gradient(180deg,#fff,#ffdca8);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+    cursor:pointer;
+    user-select:none;
+  }
+  .center-btn .txt1{ font-weight:700; font-size:18px; color:#b23; }
+  .center-btn .txt2{ font-size:12px; color:#6a3; margin-top:4px; }
 
-    .wheel-box {
-        margin: 30px auto;
-        width: 300px;
-        height: 300px;
-        position: relative;
-    }
-    #wheel {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 8px solid #fff;
-        transition: transform 4s cubic-bezier(.25,.1,.25,1);
-    }
+  /* 指针（三角形） */
+  .pointer{
+    position:absolute;
+    left:50%;
+    top:-var(--pointer-size);
+    transform:translateX(-50%);
+    width:0;
+    height:0;
+    border-left: var(--pointer-size) solid transparent;
+    border-right: var(--pointer-size) solid transparent;
+    border-bottom: calc(var(--pointer-size) * 1.5) solid #ff4656;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+    z-index:10;
+  }
 
-    /* 指针 */
-    .pointer {
-        width: 0;
-        height: 0;
-        border-left: 18px solid transparent;
-        border-right: 18px solid transparent;
-        border-bottom: 50px solid #ff9800;
-        position: absolute;
-        top: -35px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+  /* 奖项标签（围绕圆周） */
+  .labels{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    pointer-events:none;
+    display:block;
+  }
+  .label{
+    position:absolute;
+    left:50%;
+    top:6%;
+    transform-origin: 0 50%;
+    font-size:12px;
+    color:#fff;
+    font-weight:600;
+    text-shadow:0 1px 2px rgba(0,0,0,0.4);
+    white-space:nowrap;
+    user-select:none;
+  }
 
-    .btn {
-        margin-top: 25px;
-        width: 200px;
-        height: 55px;
-        border-radius: 28px;
-        border: none;
-        font-size: 20px;
-        color: #fff;
-        cursor: pointer;
-        background: linear-gradient(45deg, #ffca28, #ff4081);
-        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
-    }
+  /* 弹窗 */
+  .modal{
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%) scale(0.9);
+    background:white;
+    padding:18px 20px;
+    border-radius:12px;
+    box-shadow:0 18px 40px rgba(10,30,60,0.25);
+    z-index:50;
+    display:none;
+    text-align:center;
+    min-width:260px;
+  }
+  .modal.show{ display:block; animation:pop .22s ease-out forwards; }
+  @keyframes pop{ to{ transform:translate(-50%,-50%) scale(1);} }
 
-    .result-box {
-        margin: 30px auto;
-        width: 85%;
-        height: 120px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.25);
-        backdrop-filter: blur(8px);
-        padding-top: 25px;
-    }
-    .result-title {
-        font-size: 22px;
-    }
-    #result {
-        margin-top: 10px;
-        font-size: 32px;
-        font-weight: bold;
-    }
+  .modal .title{ font-weight:700; margin-bottom:8px; }
+  .modal .ok{ margin-top:12px; padding:8px 12px; border-radius:8px; background:#2b9cff; color:#fff; display:inline-block; cursor:pointer; }
+
+  /* 底部说明 */
+  .note{ font-size:13px; color:#334; margin-top:10px; }
+  @media (max-width:420px){
+    :root{ --pointer-size:22px; }
+    .center-btn .txt1{ font-size:16px }
+  }
 </style>
 </head>
-
 <body>
+  <div class="container" role="application" aria-label="转盘抽奖">
+    <div class="wheel-wrap">
+      <div class="pointer" aria-hidden="true"></div>
 
-<div class="title">林水芬幸运大转盘</div>
-<div class="desc">开心每一天，赢取丰厚奖励！</div>
+      <!-- 转盘 -->
+      <div id="wheel" class="wheel" role="img" aria-label="抽奖转盘">
+        <!-- labels 用 JS 注入 -->
+        <div id="labels" class="labels"></div>
 
-<div class="wheel-box">
-    <div class="pointer"></div>
-    <img id="wheel" src="wheel.png" alt="转盘">
-</div>
+        <!-- 中心按钮 -->
+        <div id="spinBtn" class="center-btn" role="button" aria-pressed="false" tabindex="0">
+          <div class="txt1">抽奖</div>
+          <div class="txt2">点击抽取</div>
+        </div>
+      </div>
+    </div>
 
-<button class="btn" id="startBtn">开始抽奖</button>
+    <div class="note">奖品：红包1、红包2、红包3、红包4、红包5、谢谢参与。概率可在脚本中修改。</div>
+  </div>
 
-<div class="result-box">
-    <div class="result-title">抽奖结果</div>
-    <div id="result">---</div>
-</div>
+  <!-- 结果弹窗 -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="title" id="modalTitle">恭喜获得</div>
+    <div id="modalPrize" style="font-size:18px;font-weight:700;margin-top:6px;"></div>
+    <div class="ok" id="modalOk">确定</div>
+  </div>
 
 <script>
-/* ===============================
-   奖项配置（必须按图片顺时针顺序）
-   =============================== */
-const prizes = [
-    "红包1",
-    "红包2",
-    "红包3",
-    "谢谢参与",
-    "实物奖励",
-    "红包4"
-];
+/*
+  核心思路：
+  1) 根据配置的 prizes[] 和 probs[]（权重）先做一次随机抽取（加权随机），得到中奖索引 chosenIndex。
+  2) 根据每个扇区在圆盘上的角度（由 probs 计算得出）计算目标角度 centerAngle（扇区中心角度）。
+  3) 让转盘以动画形式旋转若干圈，再精确停在 chosenIndex 的中心位置 —— 因此抽奖结果与转盘停留一致。
+*/
 
-// 每个区域角度
-const perAngle = 360 / prizes.length;
+/* ========== 配置区：可按需修改 ========== */
+const prizes = ["红包1","红包2","红包3","红包4","红包5","谢谢参与"];
+// 概率（百分比或权重），顺序与 prizes 对应。可以是任何正数，函数会归一化。
+const probs = [1,1,1,1,1,95];
+/* ========================================= */
 
-// 当前累计旋转角度
-let rotation = 0;
+if (prizes.length !== probs.length) {
+  throw new Error("prizes 与 probs 必须长度一致");
+}
 
-const wheel = document.getElementById("wheel");
-const resultBox = document.getElementById("result");
-const btn = document.getElementById("startBtn");
+/* 归一化概率并计算每个扇区的起始角度 / 中心角度（角度从顶部(0deg)顺时针递增） */
+const total = probs.reduce((a,b)=>a+b,0);
+const normalized = probs.map(p => p / total); // 和为1
+const segments = []; // 每个元素：{index, prize, prob, startAngle, sliceAngle, centerAngle}
+{
+  let acc = 0; // 百分比累积（0~1）
+  for (let i=0;i<prizes.length;i++){
+    const prob = normalized[i];
+    const start = acc * 360;
+    const slice = prob * 360;
+    const center = (start + slice/2) % 360;
+    segments.push({
+      index: i,
+      prize: prizes[i],
+      prob,
+      startAngle: start,
+      sliceAngle: slice,
+      centerAngle: center
+    });
+    acc += prob;
+  }
+}
 
-// 点击抽奖
-btn.onclick = function () {
+/* 绘制转盘背景：使用 conic-gradient */
+(function renderWheelBackground(){
+  // 为了视觉区分，给小奖项使用亮色，大扇区使用深色（可自由修改）
+  const colors = [
+    "#ff8a80","#ffb74d","#ffd54f","#81c784","#64b5f6","#dcdcdc"
+  ];
+  const wheel = document.getElementById("wheel");
+  // build gradient stops by segments
+  const stops = segments.map((s, idx) => {
+    const a1 = s.startAngle.toFixed(4) + "deg";
+    const a2 = (s.startAngle + s.sliceAngle).toFixed(4) + "deg";
+    return `${colors[idx % colors.length]} ${a1} ${a2}`;
+  }).join(", ");
+  wheel.style.background = `conic-gradient(${stops})`;
+})();
 
-    btn.disabled = true;
-    resultBox.innerHTML = "抽奖中...";
+/* 绘制文本标签，文本放在每个扇区中间位置，使用绝对定位 + 旋转 */
+(function renderLabels(){
+  const labels = document.getElementById("labels");
+  labels.innerHTML = "";
+  const r = 50; // 百分比半径作为相对于容器的参考
+  segments.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "label";
+    el.textContent = s.prize;
+    // 把标签放到扇区中心角度的位置（从顶部顺时针）
+    // 我们设置 top 为小偏移，然后 rotate 每个标签到 centerAngle
+    const angle = s.centerAngle;
+    el.style.transform = `rotate(${angle}deg) translateX(${r}%) rotate(${90}deg)`;
+    // 上面做了两次旋转，第二次是为了让文字不跟随角度倾斜太多，可以根据审美调整
+    labels.appendChild(el);
+  });
+})();
 
-    // 随机选中奖项索引
-    const index = Math.floor(Math.random() * prizes.length);
+/* 抽奖逻辑：加权随机 */
+function weightedRandomIndex(weights){
+  const sum = weights.reduce((a,b)=>a+b,0);
+  const r = Math.random() * sum;
+  let acc = 0;
+  for (let i=0;i<weights.length;i++){
+    acc += weights[i];
+    if (r < acc) return i;
+  }
+  return weights.length - 1;
+}
 
-    // 🎯 计算转盘最终角度（确保指针指在对应扇区）
-    const targetAngle = index * perAngle;
+/* 控制转盘旋转并确保停在 targetIndex */
+const wheelEl = document.getElementById("wheel");
+const spinBtn = document.getElementById("spinBtn");
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const modalPrize = document.getElementById("modalPrize");
+const modalOk = document.getElementById("modalOk");
 
-    // 🎯 + 多转几圈（确保动画稳定）
-    rotation = rotation + 360 * 5 + (360 - targetAngle);
+let spinning = false;
+let currentRotation = 0; // 当前角度（deg）
 
-    wheel.style.transform = `rotate(${rotation}deg)`;
+function spinOnce(){
+  if (spinning) return;
+  spinning = true;
+  spinBtn.setAttribute("aria-pressed","true");
+  // 1) 先选择结果（加权随机）
+  const chosenIndex = weightedRandomIndex(probs);
+  const chosenSegment = segments[chosenIndex];
 
-    // 动画结束后给结果
-    setTimeout(() => {
-        resultBox.innerHTML = prizes[index];
-        btn.disabled = false;
-    }, 4200);
-};
+  // 2) 计算目标角度：为了视觉效果，多转几圈（fullTurns），并对准扇区中心，使该扇区在顶部指针下方
+  const fullTurns = Math.floor(Math.random()*3) + 4; // 4~6圈随机，避免每次完全一样
+  // 当转盘旋转为 X deg 时，轮盘顶部指向的扇区为 angle = (360 - (X % 360)) mod 360 。
+  // 我们希望中心角度 centerAngle 被指向顶部，所以要求 X % 360 = 360 - centerAngle
+  const centerAngle = chosenSegment.centerAngle; // 0 ~ 360
+  const finalRotationModulo = (360 - centerAngle) % 360; // 0~360
+  const targetRotation = fullTurns * 360 + finalRotationModulo;
+
+  // 使用 CSS transition 做平滑动画（时长可调整）
+  const duration = 5200 + Math.random()*800; // ms，略带随机性
+  wheelEl.style.transition = `transform ${duration}ms cubic-bezier(.14,.92,.38,1)`; // 惯性效果曲线
+  // 设置 transform
+  // 注意：因为 currentRotation 记录了上一次旋转的角度，我们从 currentRotation -> currentRotation + targetRotation
+  const newRotation = currentRotation + targetRotation;
+  // apply
+  requestAnimationFrame(()=>{
+    wheelEl.style.transform = `rotate(${newRotation}deg)`;
+  });
+
+  // 等待动画完成（监听 transitionend）
+  const onEnd = (e) => {
+    if (e.target !== wheelEl) return;
+    wheelEl.removeEventListener('transitionend', onEnd);
+    currentRotation = newRotation % 360; // 记录当前位置到 [0,360)
+    // 清除 transition 以便后续即时设置 transform 时不出现动画
+    wheelEl.style.transition = 'transform 0s linear';
+    // 显示结果
+    setTimeout(()=>{ // 小延迟让用户感受停下来的效果
+      showResult(chosenSegment);
+      spinning = false;
+      spinBtn.setAttribute("aria-pressed","false");
+    }, 350);
+  };
+  wheelEl.addEventListener('transitionend', onEnd);
+}
+
+/* 弹窗展示 */
+function showResult(segment){
+  modalTitle.textContent = (segment.prize === '谢谢参与') ? "谢谢参与" : "恭喜获得";
+  modalPrize.textContent = segment.prize;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+}
+/* 关闭弹窗 */
+function hideModal(){
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+
+/* 事件绑定 */
+spinBtn.addEventListener('click', spinOnce);
+spinBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); spinOnce(); }
+});
+modalOk.addEventListener('click', hideModal);
+// 点击遮罩外也可关闭（通过监听 document）
+document.addEventListener('click', (e)=>{
+  if (!modal.classList.contains('show')) return;
+  if (!modal.contains(e.target)) hideModal();
+});
+
+/* 可选：调试输出（在控制台查看扇区信息） */
+console.log("segments:", segments);
 </script>
-
 </body>
 </html>
